@@ -2,12 +2,14 @@ package com.mycompany.bugtracker.web.rest;
 
 import com.mycompany.bugtracker.domain.Ticket;
 import com.mycompany.bugtracker.repository.TicketRepository;
+import com.mycompany.bugtracker.security.AuthoritiesConstants;
 import com.mycompany.bugtracker.web.rest.errors.BadRequestAlertException;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.Authorization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.http.ResponseEntity;
@@ -148,6 +151,7 @@ public class TicketResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/tickets/{id}")
+    @Secured(AuthoritiesConstants.ADMIN)
     public ResponseEntity<Void> deleteTicket(@PathVariable Long id) {
         log.debug("REST request to delete Ticket : {}", id);
         ticketRepository.deleteById(id);
