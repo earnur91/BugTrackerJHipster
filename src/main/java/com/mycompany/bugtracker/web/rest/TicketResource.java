@@ -7,10 +7,12 @@ import com.mycompany.bugtracker.web.rest.errors.BadRequestAlertException;
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.PaginationUtil;
 import io.github.jhipster.web.util.ResponseUtil;
+import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -94,7 +96,10 @@ public class TicketResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of tickets in body.
      */
     @GetMapping("/tickets")
-    public ResponseEntity<List<Ticket>> getAllTickets(Pageable pageable, @RequestParam MultiValueMap<String, String> queryParams, UriComponentsBuilder uriBuilder, @RequestParam(required = false, defaultValue = "false") boolean eagerload) {
+    public ResponseEntity<List<Ticket>> getAllTickets(Pageable pageable,
+                                                      @RequestParam MultiValueMap<String, String> queryParams,
+                                                      UriComponentsBuilder uriBuilder,
+                                                      @RequestParam(required = false, defaultValue = "false") boolean eagerload) {
         log.debug("REST request to get a page of Tickets");
         Page<Ticket> page;
         if (eagerload) {
@@ -117,6 +122,23 @@ public class TicketResource {
         log.debug("REST request to get Ticket : {}", id);
         Optional<Ticket> ticket = ticketRepository.findOneWithEagerRelationships(id);
         return ResponseUtil.wrapOrNotFound(ticket);
+    }
+
+    @GetMapping("/tickets/self")
+    public ResponseEntity<List<Ticket>> getAllSelfTickets(@ApiParam Pageable pageable,
+                                                          @RequestParam MultiValueMap<String, String> queryParams,
+                                                          UriComponentsBuilder uriBuilder,
+                                                          @RequestParam(required = false, defaultValue = "false") boolean eagerload) {
+
+        log.debug("REST request to get a page of user's Tickets");
+        Page<Ticket> page;
+        if (eagerload) {
+            page = ticketRepository.findAllWithEagerRelationships(pageable);
+        } else {
+            page = new PageImpl<>(ticketRepository.findByAssignedToIsCurrentUser());
+        }
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(uriBuilder.queryParams(queryParams), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     /**
